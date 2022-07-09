@@ -4,7 +4,6 @@ import requests
 import re
 import pyinputplus
 import logging
-from random import choice
 
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s - %(message)s')
 logging.disable()
@@ -43,8 +42,6 @@ def needed_picture_size(string, pic_size='100w'):
         name = str(string).split('"')[1]
         logging.info(link, name)
         return link, name
-    else:
-        return None
 
 
 # TODO: create the folder to download
@@ -60,21 +57,17 @@ def make_directory(picture_theme, basic_dir='D:\\pictures'):
 
 
 # TODO: write the pics to the directory 'D:\pictures' in the folder by the theme chosen
-def writing_to_the_file(path, photo_links, total):
+def writing_to_the_file(path, photo_links):
     """writes the content to the created directory"""
     print("Downloading...")
-    chosen_links = set()
-    while len(chosen_links) < total:
-        new_choice = choice(photo_links)
-        chosen_links.add(new_choice)
 
-    logging.info(f"The set length {len(chosen_links)}")
     counter = 0
-    for picture in chosen_links:
+    for picture in photo_links:
         url, name = picture
         logging.info(name)
         with open(f"{path}\\{name}.jpg", 'wb') as file:
             result = requests.get(url)
+            # noinspection PyBroadException
             try:
                 file.write(result.content)
                 counter += 1
@@ -99,10 +92,11 @@ if __name__ == "__main__":
 
     # a dictionary of sizes to parse the necessary size
     size_dictionary = {'large': " 2400w", 'regular': " 1000w", 'small': " 100w"}
-    f = get_content(theme, size)
-    logging.info(len(f), *f)
+    content_list = get_content(theme, size)
+    logging.info(len(content_list), *content_list)
 
     # the user enters the quantity of pictures to download
-    quantity = pyinputplus.inputNum(min=1, max=len(f), prompt=f"How many pictures do you need? "
-                                                              f"({len(f)} maximum)\n")
-    writing_to_the_file(make_directory(theme, basic_dir='D:\\pictures'), f, total=quantity)
+    quantity = pyinputplus.inputNum(min=1, max=len(content_list), prompt=f"How many pictures do you need? "
+                                                                         f"({len(content_list)} maximum)\n")
+    array_pictures = content_list[:quantity]
+    writing_to_the_file(make_directory(theme, basic_dir='D:\\pictures'), array_pictures)
